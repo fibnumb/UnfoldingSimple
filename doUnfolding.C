@@ -1,16 +1,11 @@
 {
-    cout<<"Loading RooUnfold Library"<<endl;
-  gSystem->Load("/Users/fibnumb/alice/sw/BUILD/RooUnfold-latest/RooUnfold/libRooUnfold");
-    cout<<"Loading AliRoot && AliPhysics includes"<<endl;
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/include -I${ALICE_PHYSICS}/include");
-   
+    gSystem->Load("/Users/fibnumb/alice/sw/BUILD/RooUnfold-latest-roo-build/RooUnfold/libRooUnfold");
+    gSystem->AddIncludePath("-I${ALICE_ROOT}/include -I${ALICE_PHYSICS}/include");
+    gSystem->Load("/Users/fibnumb/alice/sw/osx_x86-64/RooUnfold/roo-build-2/libRooUnfold.dylib");
+    gSystem->Load("libRooUnfold");
     
-    cout<<"Running unfolding task"<<endl;
+    gROOT->LoadMacro("unfoldBase.C++g");
     
-    gROOT->ProcessLine(.x RooUnfoldExample.cxx);
-    
-  //gROOT->LoadMacro("unfoldBase.C++g");
-    //gInterpreter->ExecuteMacro("unfoldBase.C")
-    
+    unfoldBase("unfoldOutput.root","AnalysisJetResponseR02t0150C0300.root","AnalysisResults200KLHC12e.root");
 }
 
