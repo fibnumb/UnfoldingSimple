@@ -47,6 +47,7 @@ class AliUnfolding;
 #endif
 using namespace std;
 
+ const Char_t*
  TH1D *unfoldBayes(TH1D* data, RooUnfoldResponse* response);
  TH1D *unfoldSVD(TH1D* data, RooUnfoldResponse* response);
 
@@ -148,7 +149,7 @@ TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response)
     RooUnfold* unfold = new RooUnfoldSvd(response, data);
     TH1D* unfolded = (TH1D*) unfold->Hreco();
     
-    TString t = TString::Format("unfolded_bayes");
+    TString t = TString::Format("unfolded_svd");
     
     unfolded->SetName(t);
     delete unfold;
@@ -159,7 +160,7 @@ TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response)
 
 
 // --- Get end of input histogram name -------------------------------
-const Char_t*
+
 getPostfix(const TH1* h)
 {
     static TString t;
