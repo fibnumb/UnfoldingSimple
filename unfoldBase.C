@@ -47,17 +47,18 @@ class AliUnfolding;
 #endif
 using namespace std;
 
- TH1D* unfoldBayes(TH1D* data, RooUnfoldResponse* response);
+ TH1D *unfoldBayes(TH1D* data, RooUnfoldResponse* response);
+ TH1D *unfoldSVD(TH1D* data, RooUnfoldResponse* response);
 
 
 void unfoldBase(const Char_t* output="unfoldOutput.root", const Char_t* responseFileName="AnalysisJetResponseR02t0150C0300.root", const Char_t* dataFileName="AnalysisResults.root"){
 
-    TFile* responseFile = TFile::Open(responseFileName,"READ");
+    TFile *responseFile = TFile::Open(responseFileName,"READ");
     if (!responseFile|| responseFile->IsZombie() ) {
         Error("createUnfoldingFile", "Couldn't open %s", responseFileName);
         return;
     }
-    TList* responseList = static_cast<TList*>(responseFile->Get("AliJetResponseMaker_Jet_AKTFullR020_tracks_pT0150_caloClusters_E0300_pt_scheme_Jet_AKTFullR020_mcparticles_pT0000_pt_scheme_Bias5_BiasType0_EMCALfid_histos"));
+    TList *responseList = static_cast<TList*>(responseFile->Get("AliJetResponseMaker_Jet_AKTFullR020_tracks_pT0150_caloClusters_E0300_pt_scheme_Jet_AKTFullR020_mcparticles_pT0000_pt_scheme_Bias5_BiasType0_EMCALfid_histos"));
     
     TFile* dataFile = TFile::Open(dataFileName,"READ");
     if (!dataFile || dataFile->IsZombie()) {
@@ -106,10 +107,16 @@ void unfoldBase(const Char_t* output="unfoldOutput.root", const Char_t* response
     }
     
     TH1D* unfolded = unfoldBayes(histMeasSpectra ,responseObject);
-
+    
+    TH1D *unfoldedSVD = 0x0;
+    unfoldedSVD = unfoldSVD(histMeasSpectra, responseObject);
+    
+    
+    
   hist2Dresponse->Write();
   unfolded->Write();
   histMeasSpectra->Write();
+  unfoldedSVD->Write();
   outputFile->Close();
   responseFile->Close();
   dataFile->Close();
@@ -117,6 +124,8 @@ void unfoldBase(const Char_t* output="unfoldOutput.root", const Char_t* response
 
 
 // --- Use RooUnfold stuff -------------------------------------------
+
+// -- Use Bayesian Unfolding -----------------------------------------
 TH1D* unfoldBayes(TH1D* data, RooUnfoldResponse* response)
 {
     
@@ -132,6 +141,32 @@ TH1D* unfoldBayes(TH1D* data, RooUnfoldResponse* response)
     return unfolded;
 }
 
+// -- Use SVD Unfolding ----------------------------------------------
+TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response)
+{
+
+    RooUnfold* unfold = new RooUnfoldSvd(response, data);
+    TH1D* unfolded = (TH1D*) unfold->Hreco();
+    
+    TString t = TString::Format("unfolded_bayes");
+    
+    unfolded->SetName(t);
+    delete unfold;
+    
+    return unfolded;
+    
+}
+
+
+// --- Get end of input histogram name -------------------------------
+const Char_t*
+getPostfix(const TH1* h)
+{
+    static TString t;
+    t = h->GetName();
+    t.ReplaceAll("mult", "");
+    return t.Data();
+}
 //
 //   EOF
 //
