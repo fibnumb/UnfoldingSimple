@@ -47,9 +47,9 @@ class AliUnfolding;
 #endif
 using namespace std;
 
- const Char_t*
- TH1D *unfoldBayes(TH1D* data, RooUnfoldResponse* response);
- TH1D *unfoldSVD(TH1D* data, RooUnfoldResponse* response);
+
+ TH1D* unfoldBayes(TH1D* data, RooUnfoldResponse* response);
+ TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response);
 
 
 void unfoldBase(const Char_t* output="unfoldOutput.root", const Char_t* responseFileName="AnalysisJetResponseR02t0150C0300.root", const Char_t* dataFileName="AnalysisResults.root"){
@@ -160,7 +160,7 @@ TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response)
 
 
 // --- Get end of input histogram name -------------------------------
-
+const Char_t*
 getPostfix(const TH1* h)
 {
     static TString t;
