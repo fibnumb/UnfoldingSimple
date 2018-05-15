@@ -50,6 +50,7 @@ using namespace std;
 
  TH1D* unfoldBayes(TH1D* data, RooUnfoldResponse* response);
  TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response);
+ TH1D* unfoldBinbyBin(TH1D* data, RooUnfoldResponse* response);
 
 
 void unfoldBase(const Char_t* output="unfoldOutput.root", const Char_t* responseFileName="AnalysisJetResponseR02t0150C0300.root", const Char_t* dataFileName="AnalysisResults.root"){
@@ -100,24 +101,30 @@ void unfoldBase(const Char_t* output="unfoldOutput.root", const Char_t* response
         for(Int_t yBin = 0; yBin < nBiny; yBin++){
             binCont = (Float_t) hist2Dresponse->GetBinContent(xBin, yBin);
             
-            coordPt[0] = (Float_t) xAxis->GetBinCenter(coord[0]);
-            coordPt[1] = (Float_t) yAxis->GetBinCenter(coord[1]);
+            coordPt[0] = (Float_t) xAxis->GetBinCenter(xBin);
+            coordPt[1] = (Float_t) yAxis->GetBinCenter(yBin);
             
-            responseObject->Fill(coordPt[0], coordPt[1], binCont);
+            responseObject->Fill(coordPt[1], coordPt[0], binCont);
+            
+            //responseObject->Fill(yBin, xBin, binCont);
         }
     }
     
     TH1D* unfolded = unfoldBayes(histMeasSpectra ,responseObject);
     
     TH1D *unfoldedSVD = 0x0;
-    unfoldedSVD = unfoldSVD(histMeasSpectra, responseObject);
+    //unfoldedSVD = unfoldSVD(histMeasSpectra, responseObject);
+    
+    TH1D *unfoldedBinbyBin = unfoldBinbyBin(histMeasSpectra ,responseObject);
+    //unfoldedBinbyBin->Draw();
     
     
     
   hist2Dresponse->Write();
   unfolded->Write();
   histMeasSpectra->Write();
-  unfoldedSVD->Write();
+  //unfoldedSVD->Write();
+    unfoldedBinbyBin->Write();
   outputFile->Close();
   responseFile->Close();
   dataFile->Close();
@@ -131,7 +138,7 @@ TH1D* unfoldBayes(TH1D* data, RooUnfoldResponse* response)
 {
     
     
-    RooUnfold* unfold = new RooUnfoldBayes(response, data, 20);
+    RooUnfold* unfold = new RooUnfoldBayes(response, data, 3);
     TH1D* unfolded= (TH1D*) unfold->Hreco();
     
     TString t = TString::Format("unfolded_bayes");
@@ -146,7 +153,7 @@ TH1D* unfoldBayes(TH1D* data, RooUnfoldResponse* response)
 TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response)
 {
 
-    RooUnfold* unfold = new RooUnfoldSvd(response, data);
+    RooUnfold* unfold = new RooUnfoldSvd(response, data, 3);
     TH1D* unfolded = (TH1D*) unfold->Hreco();
     
     TString t = TString::Format("unfolded_svd");
@@ -156,6 +163,22 @@ TH1D* unfoldSVD(TH1D* data, RooUnfoldResponse* response)
     
     return unfolded;
     
+}
+
+// -- Use Bin-by-Bin Unfolding -----------------------------------------
+TH1D* unfoldBinbyBin(TH1D* data, RooUnfoldResponse* response)
+{
+    
+    
+    RooUnfold* unfold = new RooUnfoldBayes(response, data);
+    TH1D* unfolded= (TH1D*) unfold->Hreco();
+    
+    TString t = TString::Format("unfolded_B2B");
+    
+    unfolded->SetName(t);
+    delete unfold;
+    
+    return unfolded;
 }
 
 
